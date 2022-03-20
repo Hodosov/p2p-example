@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { v4 } from "uuid";
 import socket from "../socket";
@@ -7,16 +7,19 @@ import ACTIONS from "../socket/actions";
 export default function Main() {
   const history = useHistory();
   const [rooms, updateRooms] = useState([]);
+  const rootNode = useRef();
 
   useEffect(() => {
     //показываем все комнаты
     socket.on(ACTIONS.SHARE_ROOMS, ({ rooms = [] } = {}) => {
-      updateRooms(rooms);
+      if (rootNode.current) {
+        updateRooms(rooms);
+      }
     });
   }, []);
 
   return (
-    <div>
+    <div ref={rootNode}>
       <h1>Available Rooms</h1>
       <ul>
         {rooms.map((roomID) => (
@@ -24,7 +27,7 @@ export default function Main() {
             {roomID}
             <button
               onClick={() => {
-                history.push(`/rooms/${roomID}`);
+                history.push(`/room/${roomID}`);
               }}
             >
               JOIN ROOM
@@ -34,7 +37,7 @@ export default function Main() {
       </ul>
       <button
         onClick={() => {
-          history.push(`/rooms/${v4()}`);
+          history.push(`/room/${v4()}`);
         }}
       >
         Create New Room
